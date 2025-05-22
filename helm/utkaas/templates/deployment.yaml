@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: utkaas-backend
+  template:
+    metadata:
+      labels:
+        app: utkaas-backend
+    spec:
+      serviceAccountName: {{ .Release.Name }}-backend
+      containers:
+      - name: backend
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          value: {{ .Values.database.url }}
+        - name: KUBERNETES_NAMESPACE
+          value: {{ .Values.namespace }}

@@ -1,0 +1,10 @@
+image:
+  repository: ghcr.io/your-username/your-repo/backend
+  tag: latest
+  pullPolicy: Always
+replicaCount: 1
+service:
+  port: 80
+database:
+  url: postgres://postgres:password@postgres.utkaas.svc.cluster.local:5432/uptimekuma_db
+namespace: utkaas
