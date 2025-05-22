@@ -12,6 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install Dependencies
+        run: npm install
+        working-directory: ./backend
+
       - name: Lint backend
         run: npm run lint
         working-directory: ./backend
