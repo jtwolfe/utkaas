@@ -1,15 +1,20 @@
-FROM node:14
+FROM node:20 AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-
-RUN npm install
+RUN npm install --production=false
 
 COPY . .
-
 RUN npm run build
 
-EXPOSE 3000
+# --- Production image ---
+FROM node:20-slim AS production
+WORKDIR /app
 
-CMD ["npm", "start"]
+COPY --from=builder /app/package*.json ./
+RUN npm install --production --ignore-scripts --prefer-offline
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+CMD ["node", "dist/server.js"]

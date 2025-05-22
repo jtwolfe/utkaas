@@ -41,13 +41,13 @@ app.post('/create-account', async (req: Request, res: Response) => {
     }
 
     const password_hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    const user = (await User.create({
       subdomain,
       username,
       password_hash,
       last_login: new Date(),
       cr_name: `uptimekuma-${subdomain}`,
-    }) as UserAttributes;
+    })).get({ plain: true }) as UserAttributes;
 
     const secretName = `uptimekuma-${subdomain}-creds`;
     const secret: k8s.V1Secret = {
@@ -89,9 +89,9 @@ cron.schedule('0 0 * * *', async () => {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-  const inactive3Months = await User.findAll({
+  const inactive3Months = (await User.findAll({
     where: { last_login: { [Op.lt]: threeMonthsAgo } },
-  }) as UserAttributes[];
+  })).map((u: any) => u.get({ plain: true })) as UserAttributes[];
   for (const user of inactive3Months) {
     try {
       const cr = await k8sCustomApi.getNamespacedCustomObject(
@@ -101,7 +101,8 @@ cron.schedule('0 0 * * *', async () => {
         'uptimekumainstances',
         user.cr_name
       );
-      if (cr.body.spec.replicas !== 0) {
+      const crBody = cr.body as any;
+      if (crBody.spec && crBody.spec.replicas !== 0) {
         await k8sCustomApi.patchNamespacedCustomObject(
           'uptimekuma.example.com',
           'v1',
@@ -121,9 +122,9 @@ cron.schedule('0 0 * * *', async () => {
     }
   }
 
-  const inactive1Year = await User.findAll({
+  const inactive1Year = (await User.findAll({
     where: { last_login: { [Op.lt]: oneYearAgo } },
-  }) as UserAttributes[];
+  })).map((u: any) => u.get({ plain: true })) as UserAttributes[];
   for (const user of inactive1Year) {
     try {
       await k8sCustomApi.deleteNamespacedCustomObject(
