@@ -1,0 +1,5 @@
+apiVersion: v2
+name: utkaas
+version: 0.1.0
+description: UptimeKuma as a Service backend and CRD
+appVersion: "1.0.0"
