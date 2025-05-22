@@ -12,6 +12,13 @@ interface UserAttributes {
   cr_name: string;
 }
 
+interface UptimeKumaInstance {
+  spec?: {
+    replicas?: number;
+  };
+  [key: string]: any;
+}
+
 const app = express();
 app.use(express.json());
 
@@ -91,7 +98,7 @@ cron.schedule('0 0 * * *', async () => {
 
   const inactive3Months = (await User.findAll({
     where: { last_login: { [Op.lt]: threeMonthsAgo } },
-  })).map((u: any) => u.get({ plain: true })) as UserAttributes[];
+  })).map((u) => u.get({ plain: true }) as UserAttributes);
   for (const user of inactive3Months) {
     try {
       const cr = await k8sCustomApi.getNamespacedCustomObject(
@@ -101,7 +108,7 @@ cron.schedule('0 0 * * *', async () => {
         'uptimekumainstances',
         user.cr_name
       );
-      const crBody = cr.body as any;
+      const crBody = cr.body as UptimeKumaInstance;
       if (crBody.spec && crBody.spec.replicas !== 0) {
         await k8sCustomApi.patchNamespacedCustomObject(
           'uptimekuma.example.com',
@@ -124,7 +131,7 @@ cron.schedule('0 0 * * *', async () => {
 
   const inactive1Year = (await User.findAll({
     where: { last_login: { [Op.lt]: oneYearAgo } },
-  })).map((u: any) => u.get({ plain: true })) as UserAttributes[];
+  })).map((u) => u.get({ plain: true }) as UserAttributes);
   for (const user of inactive1Year) {
     try {
       await k8sCustomApi.deleteNamespacedCustomObject(
