@@ -61,7 +61,7 @@ jobs:
         run: helm package ./helm/utkaas --destination packaged-helm
 
       - name: Upload Helm chart artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: utkaas-helm-chart
           path: packaged-helm/*.tgz
